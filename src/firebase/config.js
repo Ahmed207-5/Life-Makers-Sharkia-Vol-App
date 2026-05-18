@@ -3,12 +3,13 @@ import { getAuth } from 'firebase/auth'
 import { getFirestore } from 'firebase/firestore'
 
 const firebaseConfig = {
-  apiKey: 'YOUR_API_KEY',
-  authDomain: 'YOUR_DOMAIN',
-  projectId: 'YOUR_PROJECT_ID',
-  storageBucket: 'YOUR_STORAGE_BUCKET',
-  messagingSenderId: 'YOUR_SENDER_ID',
-  appId: 'YOUR_APP_ID'
+  apiKey: "AIzaSyCKiMVRDuiKYutcjcTHie2_FKJhcAyptTk",
+  authDomain: "life-makers-sharqia.firebaseapp.com",
+  projectId: "life-makers-sharqia",
+  storageBucket: "life-makers-sharqia.firebasestorage.app",
+  messagingSenderId: "935272961884",
+  appId: "1:935272961884:web:5a3a411d948f83453b1399",
+  measurementId: "G-QDYWBCS9FT"
 }
 
 const app = initializeApp(firebaseConfig)
