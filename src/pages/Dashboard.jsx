@@ -4,7 +4,8 @@ import { auth, db } from '../firebase/config'
 
 import {
   doc,
-  getDoc
+  getDoc,
+  updateDoc
 } from 'firebase/firestore'
 
 import { QRCodeCanvas } from 'qrcode.react'
@@ -12,6 +13,8 @@ import { QRCodeCanvas } from 'qrcode.react'
 export default function Dashboard() {
 
   const [userData, setUserData] = useState(null)
+
+  const [editing, setEditing] = useState(false)
 
   useEffect(() => {
 
@@ -45,6 +48,40 @@ export default function Dashboard() {
 
   }, [])
 
+  const saveProfile = async () => {
+
+    const user = auth.currentUser
+
+    if (!user) return
+
+    try {
+
+      const userRef = doc(db, 'users', user.uid)
+
+      await updateDoc(userRef, {
+
+        phone: userData.phone || '',
+
+        team: userData.team || '',
+
+        bio: userData.bio || '',
+
+        image: userData.image || ''
+
+      })
+
+      alert('تم حفظ البيانات بنجاح')
+
+      setEditing(false)
+
+    } catch (error) {
+
+      console.log(error)
+
+    }
+
+  }
+
   if (!userData) {
 
     return (
@@ -64,6 +101,18 @@ export default function Dashboard() {
         <div className='flex items-center justify-between flex-wrap gap-4'>
 
           <div>
+
+            {
+              userData.image && (
+
+                <img
+                  src={userData.image}
+                  alt='profile'
+                  className='w-24 h-24 rounded-full object-cover mb-4 border-4 border-white'
+                />
+
+              )
+            }
 
             <h1 className='text-4xl font-bold'>
               أهلاً {userData.name} 👋
@@ -113,29 +162,88 @@ export default function Dashboard() {
             البيانات الشخصية
           </h2>
 
-          <p>
+          <p className='mb-2'>
             <strong>الإيميل:</strong>
             {' '}
             {userData.email}
           </p>
 
-          <p>
-            <strong>الموبايل:</strong>
-            {' '}
-            {userData.phone || 'غير مضاف'}
-          </p>
+          <div className='space-y-3'>
 
-          <p>
-            <strong>الفريق:</strong>
-            {' '}
-            {userData.team || 'غير محدد'}
-          </p>
+            <input
+              type='text'
+              placeholder='رابط الصورة'
+              value={userData.image || ''}
+              disabled={!editing}
+              className='w-full border p-2 rounded-xl'
+              onChange={(e) =>
+                setUserData({
+                  ...userData,
+                  image: e.target.value
+                })
+              }
+            />
 
-          <p>
-            <strong>نبذة:</strong>
-            {' '}
-            {userData.bio || 'لا توجد'}
-          </p>
+            <input
+              type='text'
+              placeholder='رقم الموبايل'
+              value={userData.phone || ''}
+              disabled={!editing}
+              className='w-full border p-2 rounded-xl'
+              onChange={(e) =>
+                setUserData({
+                  ...userData,
+                  phone: e.target.value
+                })
+              }
+            />
+
+            <input
+              type='text'
+              placeholder='الفريق'
+              value={userData.team || ''}
+              disabled={!editing}
+              className='w-full border p-2 rounded-xl'
+              onChange={(e) =>
+                setUserData({
+                  ...userData,
+                  team: e.target.value
+                })
+              }
+            />
+
+            <textarea
+              placeholder='نبذة'
+              value={userData.bio || ''}
+              disabled={!editing}
+              className='w-full border p-2 rounded-xl'
+              onChange={(e) =>
+                setUserData({
+                  ...userData,
+                  bio: e.target.value
+                })
+              }
+            />
+
+          </div>
+
+          <div className='flex gap-3 mt-4'>
+
+            <button
+              className='bg-blue-600 text-white px-4 py-2 rounded-xl'
+              onClick={() => setEditing(true)}
+            >
+              تعديل
+            </button>
+
+            <button
+              className='bg-green-600 text-white px-4 py-2 rounded-xl'
+              onClick={saveProfile}
+            >
+              حفظ
+            </button>
+
+          </div>
 
         </div>
 
