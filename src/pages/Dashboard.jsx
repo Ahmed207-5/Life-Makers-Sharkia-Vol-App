@@ -15,29 +15,27 @@ export default function Dashboard() {
 
   useEffect(() => {
 
-    const fetchUser = async () => {
+  const unsubscribe = auth.onAuthStateChanged(async (user) => {
 
-      const user = auth.currentUser
+    if (user) {
 
-      if (user) {
+      const docRef = doc(db, 'users', user.uid)
 
-        const docRef = doc(db, 'users', user.uid)
+      const docSnap = await getDoc(docRef)
 
-        const docSnap = await getDoc(docRef)
+      if (docSnap.exists()) {
 
-        if (docSnap.exists()) {
-
-          setUserData(docSnap.data())
-
-        }
+        setUserData(docSnap.data())
 
       }
 
     }
 
-    fetchUser()
+  })
 
-  }, [])
+  return () => unsubscribe()
+
+}, [])
 
   if (!userData) {
 
