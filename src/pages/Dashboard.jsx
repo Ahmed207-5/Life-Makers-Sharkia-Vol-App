@@ -11,6 +11,7 @@ import {
 } from 'firebase/auth'
 
 import { auth, db } from '../firebase/config'
+import logo from '../logo.png.png'
 
 import { QRCodeCanvas } from 'qrcode.react'
 
@@ -165,10 +166,14 @@ export default function Dashboard() {
         <div>
 
           <img
-            src='/logo.png.png'
-            alt='logo'
-            className='w-52 mb-5'
-          />
+  src={logo}
+  alt="logo"
+  className="w-32 mb-4"
+/>
+          
+          git add .
+git commit -m "Fix logo"
+git push
 
           <h1 className='text-5xl font-bold mb-3'>
 
