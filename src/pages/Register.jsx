@@ -33,15 +33,44 @@ export default function Register() {
       const user = userCredential.user
 
       await setDoc(doc(db, 'users', user.uid), {
-        name: name,
-        email: email,
-        points: 0,
-        hours: 0,
-        activities: [],
-        certificates: [],
-        createdAt: new Date()
-      })
 
+  name: name,
+
+  email: email,
+
+  role: 'volunteer',
+
+  approved: false,
+
+  phone: '',
+
+  team: '',
+
+  bio: '',
+
+  badge: 'متطوع جديد',
+
+  rank: 'غير مصنف',
+
+  hours: 0,
+
+  points: 0,
+
+  notes: '',
+
+  certificates: [],
+
+  activities: [],
+
+  upcomingActivities: [],
+
+  notifications: [],
+
+  attendance: [],
+
+  createdAt: new Date()
+
+})
       navigate('/dashboard')
 
     } catch (err) {
