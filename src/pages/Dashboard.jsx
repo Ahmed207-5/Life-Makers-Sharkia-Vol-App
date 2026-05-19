@@ -12,8 +12,6 @@ import { signOut } from 'firebase/auth'
 
 import { QRCodeCanvas } from 'qrcode.react'
 
-import logo from '../assets/logo.png'
-
 export default function Dashboard() {
 
   const [userData, setUserData] = useState(null)
@@ -25,7 +23,7 @@ export default function Dashboard() {
     'بارتشن',
     'قافلة',
     'مجزر',
-    'تمويل',
+    'نمويل',
     'ديزاين',
     'إدارة الحالة',
     'تنفيذ',
@@ -49,7 +47,7 @@ export default function Dashboard() {
 
         try {
 
-          const docRef = doc(db, 'users', user.uid)
+          const docRef = doc(db, 'users', user.uid')
 
           const docSnap = await getDoc(docRef)
 
@@ -129,12 +127,6 @@ export default function Dashboard() {
       <div className='bg-primary text-white p-6 rounded-3xl mb-6'>
 
         <div className='flex items-center justify-between mb-6 flex-wrap gap-4'>
-
-          <img
-            src={logo}
-            alt='logo'
-            className='w-52'
-          />
 
           <a
             href='https://lifemakers-sharkia.org'
@@ -363,120 +355,6 @@ export default function Dashboard() {
             </button>
 
           </div>
-
-        </div>
-
-        <div className='bg-white p-6 rounded-2xl shadow'>
-
-          <h2 className='font-bold text-2xl mb-4'>
-            الأنشطة
-          </h2>
-
-          {
-            userData.activities &&
-            userData.activities.length > 0
-              ? userData.activities.map((item, index) => (
-
-                <div
-                  key={index}
-                  className='bg-gray-100 p-3 rounded-xl mb-2'
-                >
-                  {item}
-                </div>
-
-              ))
-              : <p>لا توجد أنشطة</p>
-          }
-
-        </div>
-
-        <div className='bg-white p-6 rounded-2xl shadow'>
-
-          <h2 className='font-bold text-2xl mb-4'>
-            الشهادات
-          </h2>
-
-          {
-            userData.certificates &&
-            userData.certificates.length > 0
-              ? userData.certificates.map((item, index) => (
-
-                <div
-                  key={index}
-                  className='bg-gray-100 p-3 rounded-xl mb-2'
-                >
-                  {item}
-                </div>
-
-              ))
-              : <p>لا توجد شهادات</p>
-          }
-
-        </div>
-
-        <div className='bg-white p-6 rounded-2xl shadow'>
-
-          <h2 className='font-bold text-2xl mb-4'>
-            الإشعارات
-          </h2>
-
-          {
-            userData.notifications &&
-            userData.notifications.length > 0
-              ? userData.notifications.map((item, index) => (
-
-                <div
-                  key={index}
-                  className='bg-orange-100 p-3 rounded-xl mb-2'
-                >
-                  {item}
-                </div>
-
-              ))
-              : <p>لا توجد إشعارات</p>
-          }
-
-        </div>
-
-        <div className='bg-white p-6 rounded-2xl shadow'>
-
-          <h2 className='font-bold text-2xl mb-4'>
-            الأنشطة القادمة
-          </h2>
-
-          {
-            userData.upcomingActivities &&
-            userData.upcomingActivities.length > 0
-              ? userData.upcomingActivities.map((item, index) => (
-
-                <div
-                  key={index}
-                  className='bg-blue-100 p-3 rounded-xl mb-2'
-                >
-                  {item}
-                </div>
-
-              ))
-              : <p>لا توجد أنشطة قادمة</p>
-          }
-
-        </div>
-
-        <div className='bg-white p-6 rounded-2xl shadow'>
-
-          <h2 className='font-bold text-2xl mb-4'>
-            حالة الحساب
-          </h2>
-
-          <p className='text-xl font-bold'>
-
-            {
-              userData.approved
-                ? '✅ تم قبولك'
-                : '⏳ قيد المراجعة'
-            }
-
-          </p>
 
         </div>
 
