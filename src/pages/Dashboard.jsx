@@ -15,31 +15,43 @@ export default function Dashboard() {
 
   useEffect(() => {
 
-  const unsubscribe = auth.onAuthStateChanged(async (user) => {
+    const unsubscribe = auth.onAuthStateChanged(async (user) => {
 
-    if (user) {
+      if (user) {
 
-      const docRef = doc(db, 'users', user.uid)
+        try {
 
-      const docSnap = await getDoc(docRef)
+          const docRef = doc(db, 'users', user.uid)
 
-      if (docSnap.exists()) {
+          const docSnap = await getDoc(docRef)
 
-        setUserData(docSnap.data())
+          if (docSnap.exists()) {
+
+            setUserData(docSnap.data())
+
+          }
+
+        } catch (error) {
+
+          console.log(error)
+
+        }
 
       }
 
-    }
+    })
 
-  })
+    return () => unsubscribe()
 
-  return () => unsubscribe()
-
-}, [])
+  }, [])
 
   if (!userData) {
 
-    return <div className='p-10'>Loading...</div>
+    return (
+      <div className='p-10 text-2xl'>
+        Loading...
+      </div>
+    )
 
   }
 
@@ -70,12 +82,12 @@ export default function Dashboard() {
 
             <p>
               الشارة:
-              {userData.badge}
+              {userData.badge || 'متطوع'}
             </p>
 
             <p>
               الترتيب:
-              {userData.rank}
+              {userData.rank || 'غير مصنف'}
             </p>
 
           </div>
@@ -103,21 +115,25 @@ export default function Dashboard() {
 
           <p>
             <strong>الإيميل:</strong>
+            {' '}
             {userData.email}
           </p>
 
           <p>
             <strong>الموبايل:</strong>
+            {' '}
             {userData.phone || 'غير مضاف'}
           </p>
 
           <p>
             <strong>الفريق:</strong>
+            {' '}
             {userData.team || 'غير محدد'}
           </p>
 
           <p>
             <strong>نبذة:</strong>
+            {' '}
             {userData.bio || 'لا توجد'}
           </p>
 
@@ -130,9 +146,9 @@ export default function Dashboard() {
           </h2>
 
           {
-            userData.activities.length === 0
-              ? <p>لا توجد أنشطة</p>
-              : userData.activities.map((item, index) => (
+            userData.activities &&
+            userData.activities.length > 0
+              ? userData.activities.map((item, index) => (
 
                 <div
                   key={index}
@@ -142,6 +158,7 @@ export default function Dashboard() {
                 </div>
 
               ))
+              : <p>لا توجد أنشطة</p>
           }
 
         </div>
@@ -153,9 +170,9 @@ export default function Dashboard() {
           </h2>
 
           {
-            userData.certificates.length === 0
-              ? <p>لا توجد شهادات</p>
-              : userData.certificates.map((item, index) => (
+            userData.certificates &&
+            userData.certificates.length > 0
+              ? userData.certificates.map((item, index) => (
 
                 <div
                   key={index}
@@ -165,6 +182,7 @@ export default function Dashboard() {
                 </div>
 
               ))
+              : <p>لا توجد شهادات</p>
           }
 
         </div>
@@ -176,9 +194,9 @@ export default function Dashboard() {
           </h2>
 
           {
-            userData.notifications.length === 0
-              ? <p>لا توجد إشعارات</p>
-              : userData.notifications.map((item, index) => (
+            userData.notifications &&
+            userData.notifications.length > 0
+              ? userData.notifications.map((item, index) => (
 
                 <div
                   key={index}
@@ -188,6 +206,7 @@ export default function Dashboard() {
                 </div>
 
               ))
+              : <p>لا توجد إشعارات</p>
           }
 
         </div>
@@ -199,9 +218,9 @@ export default function Dashboard() {
           </h2>
 
           {
-            userData.upcomingActivities.length === 0
-              ? <p>لا توجد أنشطة قادمة</p>
-              : userData.upcomingActivities.map((item, index) => (
+            userData.upcomingActivities &&
+            userData.upcomingActivities.length > 0
+              ? userData.upcomingActivities.map((item, index) => (
 
                 <div
                   key={index}
@@ -211,6 +230,7 @@ export default function Dashboard() {
                 </div>
 
               ))
+              : <p>لا توجد أنشطة قادمة</p>
           }
 
         </div>
