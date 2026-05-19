@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 
 import { auth, db } from '../firebase/config'
-import { signOut } from 'firebase/auth'
 
 import {
   doc,
@@ -9,7 +8,11 @@ import {
   updateDoc
 } from 'firebase/firestore'
 
+import { signOut } from 'firebase/auth'
+
 import { QRCodeCanvas } from 'qrcode.react'
+
+import logo from '../assets/logo.png'
 
 export default function Dashboard() {
 
@@ -17,13 +20,26 @@ export default function Dashboard() {
 
   const [editing, setEditing] = useState(false)
 
-const logout = async () => {
+  const activityOptions = [
 
-  await signOut(auth)
+    'بارتشن',
+    'قافلة',
+    'مجزر',
+    'تمويل',
+    'ديزاين',
+    'إدارة الحالة',
+    'تنفيذ',
+    'تجهيزات'
 
-  window.location.href = '/login'
+  ]
 
-}
+  const logout = async () => {
+
+    await signOut(auth)
+
+    window.location.href = '/login'
+
+  }
 
   useEffect(() => {
 
@@ -75,7 +91,10 @@ const logout = async () => {
 
         bio: userData.bio || '',
 
-        image: userData.image || ''
+        image: userData.image || '',
+
+        selectedActivity:
+          userData.selectedActivity || ''
 
       })
 
@@ -94,9 +113,11 @@ const logout = async () => {
   if (!userData) {
 
     return (
+
       <div className='p-10 text-2xl'>
         Loading...
       </div>
+
     )
 
   }
@@ -106,6 +127,24 @@ const logout = async () => {
     <div className='p-6 bg-gray-100 min-h-screen'>
 
       <div className='bg-primary text-white p-6 rounded-3xl mb-6'>
+
+        <div className='flex items-center justify-between mb-6 flex-wrap gap-4'>
+
+          <img
+            src={logo}
+            alt='logo'
+            className='w-52'
+          />
+
+          <a
+            href='https://lifemakers-sharkia.org'
+            target='_blank'
+            className='bg-orange-500 hover:bg-orange-600 text-white px-6 py-3 rounded-2xl text-lg font-bold transition'
+          >
+            زيارة الموقع الإلكتروني
+          </a>
+
+        </div>
 
         <div className='flex items-center justify-between flex-wrap gap-4'>
 
@@ -148,27 +187,32 @@ const logout = async () => {
               {userData.rank || 'غير مصنف'}
             </p>
 
+            <p>
+              النشاط المختار:
+              {userData.selectedActivity || 'لا يوجد'}
+            </p>
+
           </div>
 
           <div className='flex flex-col items-center gap-3'>
 
-  <div className='bg-white p-3 rounded-2xl'>
+            <div className='bg-white p-3 rounded-2xl'>
 
-    <QRCodeCanvas
-      value='https://ee-eu.kobotoolbox.org/bjCdFEdc'
-      size={170}
-    />
+              <QRCodeCanvas
+                value='https://ee-eu.kobotoolbox.org/bjCdFEdc'
+                size={170}
+              />
 
-  </div>
+            </div>
 
-  <button
-    onClick={logout}
-    className='bg-red-600 text-white px-5 py-2 rounded-xl'
-  >
-    تسجيل الخروج
-  </button>
+            <button
+              onClick={logout}
+              className='bg-red-600 text-white px-5 py-2 rounded-xl'
+            >
+              تسجيل الخروج
+            </button>
 
-</div>
+          </div>
 
         </div>
 
@@ -245,9 +289,40 @@ const logout = async () => {
               }
             />
 
+            <select
+              className='w-full border p-2 rounded-xl'
+              value={userData.selectedActivity || ''}
+              disabled={!editing}
+              onChange={(e) =>
+                setUserData({
+                  ...userData,
+                  selectedActivity: e.target.value
+                })
+              }
+            >
+
+              <option value=''>
+                اختر النشاط
+              </option>
+
+              {
+                activityOptions.map((activity, index) => (
+
+                  <option
+                    key={index}
+                    value={activity}
+                  >
+                    {activity}
+                  </option>
+
+                ))
+              }
+
+            </select>
+
           </div>
 
-          <div className='flex gap-3 mt-4'>
+          <div className='flex flex-wrap gap-3 mt-4'>
 
             <button
               className='bg-blue-600 text-white px-4 py-2 rounded-xl'
@@ -261,6 +336,30 @@ const logout = async () => {
               onClick={saveProfile}
             >
               حفظ
+            </button>
+
+            <button
+              className='bg-orange-500 text-white px-4 py-2 rounded-xl'
+              onClick={async () => {
+
+                const user = auth.currentUser
+
+                const userRef =
+                  doc(db, 'users', user.uid)
+
+                await updateDoc(userRef, {
+
+                  certificateRequest: true
+
+                })
+
+                alert('تم إرسال طلب الشهادة')
+
+              }}
+            >
+
+              طلب شهادة
+
             </button>
 
           </div>
