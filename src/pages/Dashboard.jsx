@@ -12,8 +12,6 @@ import { signOut } from 'firebase/auth'
 
 import { QRCodeCanvas } from 'qrcode.react'
 
-import logo from '../assets/logo.png'
-
 export default function Dashboard() {
 
   const [userData, setUserData] = useState(null)
@@ -129,12 +127,6 @@ export default function Dashboard() {
       <div className='bg-primary text-white p-6 rounded-3xl mb-6'>
 
         <div className='flex items-center justify-between mb-6 flex-wrap gap-4'>
-
-          <img
-            src={logo}
-            alt='logo'
-            className='w-52'
-          />
 
           <a
             href='https://lifemakers-sharkia.org'
