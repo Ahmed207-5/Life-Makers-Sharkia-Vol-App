@@ -90,13 +90,13 @@ export default function Dashboard() {
         <div className='bg-white p-6 rounded-2xl shadow'>
 
           <h2 className='font-bold text-xl mb-4'>
-            QR الحضور
+            QR تسجيل حضور الانشطة
           </h2>
 
-          <QRCodeCanvas
-            value={auth.currentUser.uid}
-            size={180}
-          />
+        <QRCodeCanvas
+  value='https://ee-eu.kobotoolbox.org/bjCdFEdc'
+  size={180}
+/>
 
         </div>
 
