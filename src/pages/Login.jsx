@@ -8,14 +8,40 @@ export default function Login() {
   const [password, setPassword] = useState('')
   const navigate = useNavigate()
 
-  const handleLogin = async () => {
-    try {
-      await signInWithEmailAndPassword(auth, email, password)
-      navigate('/dashboard')
-    } catch (err) {
-      alert(err.message)
+ const handleLogin = async () => {
+
+  try {
+
+    const userCredential =
+      await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
+      )
+
+    const user = userCredential.user
+
+    const docRef = doc(db, 'users', user.uid)
+
+    const docSnap = await getDoc(docRef)
+
+    if (docSnap.exists()) {
+
+      const userData = docSnap.data()
+
+      if (userData.role === 'admin') {
+        navigate('/admin')
+      } else {
+        navigate('/dashboard')
+      }
+
     }
+
+  } catch (err) {
+    alert(err.message)
   }
+
+}
 
   return (
     <div className='min-h-screen flex items-center justify-center bg-gray-100'>
