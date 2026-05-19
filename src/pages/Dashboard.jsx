@@ -1,143 +1,115 @@
 import { useEffect, useState } from 'react'
+import { auth, db, storage } from '../firebase/config'
 
 import {
   doc,
   getDoc,
-  updateDoc
+  updateDoc,
+  arrayUnion
 } from 'firebase/firestore'
 
 import {
-  signOut
-} from 'firebase/auth'
+  ref,
+  uploadBytes,
+  getDownloadURL
+} from 'firebase/storage'
 
-import { auth, db } from '../firebase/config'
-import logo from '../logo.png.png'
+import { signOut } from 'firebase/auth'
 
 import { QRCodeCanvas } from 'qrcode.react'
 
 export default function Dashboard() {
 
   const [userData, setUserData] = useState(null)
+  const [editMode, setEditMode] = useState(false)
+  const [imageFile, setImageFile] = useState(null)
 
-  const [editing, setEditing] = useState(false)
-
-  const [phone, setPhone] = useState('')
-
-  const [university, setUniversity] = useState('')
-
-  const [bio, setBio] = useState('')
-
-  const [photo, setPhoto] = useState('')
-
-  const [selectedActivity, setSelectedActivity] =
-    useState('')
+  const activitiesList = [
+    'بارتشن',
+    'قافلة',
+    'مجزر',
+    'تمويل',
+    'ديزاين',
+    'إدارة الحالة',
+    'تنفيذ',
+    'تجهيزات'
+  ]
 
   useEffect(() => {
+
+    const fetchUser = async () => {
+
+      const user = auth.currentUser
+
+      if (!user) return
+
+      const docRef = doc(db, 'users', user.uid)
+
+      const docSnap = await getDoc(docRef)
+
+      if (docSnap.exists()) {
+
+        setUserData(docSnap.data())
+
+      }
+
+    }
 
     fetchUser()
 
   }, [])
 
-  const fetchUser = async () => {
+  const saveData = async () => {
 
     const user = auth.currentUser
 
-    if (!user) return
+    const docRef = doc(db, 'users', user.uid)
 
-    const docRef =
-      doc(db, 'users', user.uid)
+    let imageUrl = userData.image || ''
 
-    const docSnap =
-      await getDoc(docRef)
+    if (imageFile) {
 
-    if (docSnap.exists()) {
+      const storageRef = ref(storage, `profiles/${user.uid}`)
 
-      const data = docSnap.data()
+      await uploadBytes(storageRef, imageFile)
 
-      setUserData(data)
-
-      setPhone(data.phone || '')
-      setUniversity(data.university || '')
-      setBio(data.bio || '')
-      setPhoto(data.photo || '')
+      imageUrl = await getDownloadURL(storageRef)
 
     }
 
-  }
+    await updateDoc(docRef, {
 
-  const saveProfile = async () => {
-
-    const user = auth.currentUser
-
-    const userRef =
-      doc(db, 'users', user.uid)
-
-    await updateDoc(userRef, {
-
-      phone,
-      university,
-      bio,
-      photo
+      phone: userData.phone || '',
+      university: userData.university || '',
+      bio: userData.bio || '',
+      image: imageUrl
 
     })
 
     alert('تم حفظ البيانات')
 
-    setEditing(false)
-
-    fetchUser()
+    setEditMode(false)
 
   }
 
-  const requestCertificate =
-    async () => {
+  const requestCertificate = async () => {
 
-      const user = auth.currentUser
+    const user = auth.currentUser
 
-      const userRef =
-        doc(db, 'users', user.uid)
+    const docRef = doc(db, 'users', user.uid)
 
-      await updateDoc(userRef, {
+    await updateDoc(docRef, {
 
-        certificateRequest: true
-
+      certificateRequests: arrayUnion({
+        date: new Date().toISOString(),
+        status: 'pending'
       })
 
-      alert('تم إرسال طلب الشهادة')
+    })
 
-    }
+    alert('تم إرسال طلب الشهادة')
 
-  const requestActivity =
-    async () => {
-
-      if (!selectedActivity)
-        return alert('اختر نشاط')
-
-      const user = auth.currentUser
-
-      const userRef =
-        doc(db, 'users', user.uid)
-
-      const currentActivities =
-        userData.activities || []
-
-      await updateDoc(userRef, {
-
-        requestedActivities: [
-
-          ...(userData.requestedActivities || []),
-
-          selectedActivity
-
-        ]
-
-      })
-
-      alert('تم إرسال طلب النشاط')
-
-      fetchUser()
-
-    }
+  }
 
   const logout = async () => {
 
@@ -149,339 +121,221 @@ export default function Dashboard() {
 
   if (!userData) {
 
-    return (
-      <div className='p-10'>
-        Loading...
-      </div>
-    )
+    return <div className="p-10">Loading...</div>
 
   }
 
   return (
 
-    <div className='p-6 bg-gray-100 min-h-screen'>
+    <div className="p-6 bg-gray-100 min-h-screen">
 
-      <div className='bg-primary text-white p-8 rounded-3xl mb-6 flex flex-col lg:flex-row justify-between items-center gap-6'>
+      <div className="bg-primary text-white p-6 rounded-3xl mb-6 flex justify-between items-center flex-wrap gap-4">
 
         <div>
 
-          <img
-  src={logo}
-  alt="logo"
-  className="w-32 mb-4"
-/>
-          
-          git add .
-git commit -m "Fix logo"
-git push
+          {userData.image && (
 
-          <h1 className='text-5xl font-bold mb-3'>
+            <img
+              src={userData.image}
+              alt="profile"
+              className="w-24 h-24 rounded-full object-cover mb-4 border-4 border-white"
+            />
 
-            أهلاً {userData.name} 👋
+          )}
 
+          <h1 className="text-4xl font-bold mb-2">
+            👋 أهلاً {userData.name || 'متطوع'}
           </h1>
 
-          <p className='text-xl'>
-
+          <p className="text-xl">
             عدد ساعات التطوع:
             {userData.hours || 0} ساعة
-
           </p>
 
-          <p className='text-xl mt-2'>
-
+          <p className="text-xl">
             النقاط:
             {userData.points || 0}
-
           </p>
 
-          <p className='mt-2'>
-
+          <p className="mt-2">
             الفريق:
-            {userData.team || 'غير محدد'}
-
+            {userData.team || 'لا يوجد'}
           </p>
 
         </div>
 
-        <div className='bg-white p-4 rounded-2xl'>
+        <div className="bg-white p-3 rounded-2xl">
 
           <QRCodeCanvas
-            value='https://ee-eu.kobotoolbox.org/bjCdFEdc'
-            size={180}
+            value="https://ee-eu.kobotoolbox.org/bjCdFEdc"
+            size={170}
           />
 
         </div>
 
       </div>
 
-      <div className='grid md:grid-cols-2 lg:grid-cols-3 gap-6'>
-
-        <div className='bg-white p-6 rounded-2xl shadow'>
-
-          <h2 className='text-3xl font-bold mb-4'>
-            البيانات الشخصية
-          </h2>
-
-          {
-            photo && (
-
-              <img
-                src={photo}
-                alt='profile'
-                className='w-28 h-28 rounded-full object-cover mb-4'
-              />
-
-            )
-          }
-
-          <p className='mb-2'>
-            <strong>الإيميل:</strong>
-            {userData.email}
-          </p>
-
-          {
-            editing ? (
-              <>
-
-                <input
-                  type='text'
-                  placeholder='رابط الصورة'
-                  value={photo}
-                  onChange={(e) =>
-                    setPhoto(e.target.value)
-                  }
-                  className='w-full border p-3 rounded-xl mb-3'
-                />
-
-                <input
-                  type='text'
-                  placeholder='رقم الهاتف'
-                  value={phone}
-                  onChange={(e) =>
-                    setPhone(e.target.value)
-                  }
-                  className='w-full border p-3 rounded-xl mb-3'
-                />
-
-                <input
-                  type='text'
-                  placeholder='الجامعة'
-                  value={university}
-                  onChange={(e) =>
-                    setUniversity(e.target.value)
-                  }
-                  className='w-full border p-3 rounded-xl mb-3'
-                />
-
-                <textarea
-                  placeholder='نبذة'
-                  value={bio}
-                  onChange={(e) =>
-                    setBio(e.target.value)
-                  }
-                  className='w-full border p-3 rounded-xl mb-3'
-                />
-
-                <button
-                  onClick={saveProfile}
-                  className='bg-green-600 text-white px-5 py-2 rounded-xl'
-                >
-
-                  حفظ
-
-                </button>
-
-              </>
-            ) : (
-              <>
-
-                <p className='mb-2'>
-                  <strong>الهاتف:</strong>
-                  {userData.phone || 'لا يوجد'}
-                </p>
-
-                <p className='mb-2'>
-                  <strong>الجامعة:</strong>
-                  {userData.university || 'لا يوجد'}
-                </p>
-
-                <p className='mb-4'>
-                  <strong>نبذة:</strong>
-                  {userData.bio || 'لا يوجد'}
-                </p>
-
-                <button
-                  onClick={() =>
-                    setEditing(true)
-                  }
-                  className='bg-blue-600 text-white px-5 py-2 rounded-xl'
-                >
-
-                  تعديل
-
-                </button>
-
-              </>
-            )
-          }
-
-        </div>
-
-        <div className='bg-white p-6 rounded-2xl shadow'>
-
-          <h2 className='text-3xl font-bold mb-4'>
-            الأنشطة
-          </h2>
-
-          {
-            userData.activities?.length > 0 ? (
-
-              userData.activities.map(
-                (activity, index) => (
-
-                  <div
-                    key={index}
-                    className='bg-gray-100 p-3 rounded-xl mb-2'
-                  >
-
-                    {activity}
-
-                  </div>
-
-                )
-              )
-
-            ) : (
-
-              <p>لا توجد أنشطة</p>
-
-            )
-          }
-
-          <select
-            className='w-full border p-3 rounded-xl mt-4'
-            value={selectedActivity}
-            onChange={(e) =>
-              setSelectedActivity(
-                e.target.value
-              )
-            }
-          >
-
-            <option value=''>
-              اختر نشاط
-            </option>
-
-            <option>
-              بارتشن
-            </option>
-
-            <option>
-              قافلة
-            </option>
-
-            <option>
-              مجزر
-            </option>
-
-            <option>
-              نمويل
-            </option>
-
-            <option>
-              ديزاين
-            </option>
-
-            <option>
-              ادارة الحالة
-            </option>
-
-            <option>
-              تنفيذ
-            </option>
-
-            <option>
-              تجهيزات
-            </option>
-
-          </select>
-
-          <button
-            onClick={requestActivity}
-            className='bg-orange-500 text-white px-5 py-2 rounded-xl mt-4 w-full'
-          >
-
-            طلب انضمام للنشاط
-
-          </button>
-
-        </div>
-
-        <div className='bg-white p-6 rounded-2xl shadow'>
-
-          <h2 className='text-3xl font-bold mb-4'>
-            الشهادات
-          </h2>
-
-          {
-            userData.certificates?.length > 0 ? (
-
-              userData.certificates.map(
-                (certificate, index) => (
-
-                  <div
-                    key={index}
-                    className='bg-gray-100 p-3 rounded-xl mb-2'
-                  >
-
-                    {certificate}
-
-                  </div>
-
-                )
-              )
-
-            ) : (
-
-              <p>لا توجد شهادات</p>
-
-            )
-          }
-
-          <button
-            onClick={requestCertificate}
-            className='bg-green-600 text-white px-5 py-2 rounded-xl mt-4 w-full'
-          >
-
-            طلب شهادة
-
-          </button>
-
-        </div>
-
-      </div>
-
-      <div className='flex flex-wrap gap-4 mt-8'>
+      <div className="flex gap-4 mb-6 flex-wrap">
 
         <a
-          href='https://lifemakers-sharkia.org'
-          target='_blank'
-          className='bg-orange-500 text-white px-6 py-3 rounded-2xl'
+          href="https://lifemakers-sharkia.org"
+          target="_blank"
+          className="bg-orange-500 text-white px-6 py-3 rounded-xl font-bold"
         >
-
           زيارة الموقع الإلكتروني
-
         </a>
 
         <button
           onClick={logout}
-          className='bg-red-600 text-white px-6 py-3 rounded-2xl'
+          className="bg-red-500 text-white px-6 py-3 rounded-xl font-bold"
         >
-
-          تسجيل الخروج
-
+          تسجيل خروج
         </button>
+
+      </div>
+
+      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+        <div className="bg-white p-6 rounded-2xl shadow">
+
+          <h2 className="font-bold text-2xl mb-4">
+            البيانات الشخصية
+          </h2>
+
+          <p className="mb-2">
+            <strong>الإيميل:</strong>
+            {userData.email}
+          </p>
+
+          <input
+            type="file"
+            className="mb-3"
+            onChange={(e) => setImageFile(e.target.files[0])}
+          />
+
+          <input
+            type="text"
+            placeholder="رقم الهاتف"
+            value={userData.phone || ''}
+            onChange={(e) =>
+              setUserData({
+                ...userData,
+                phone: e.target.value
+              })
+            }
+            className="w-full p-3 border rounded-xl mb-3"
+          />
+
+          <input
+            type="text"
+            placeholder="الجامعة"
+            value={userData.university || ''}
+            onChange={(e) =>
+              setUserData({
+                ...userData,
+                university: e.target.value
+              })
+            }
+            className="w-full p-3 border rounded-xl mb-3"
+          />
+
+          <textarea
+            placeholder="نبذة"
+            value={userData.bio || ''}
+            onChange={(e) =>
+              setUserData({
+                ...userData,
+                bio: e.target.value
+              })
+            }
+            className="w-full p-3 border rounded-xl mb-3"
+          />
+
+          <button
+            onClick={saveData}
+            className="bg-green-500 text-white px-6 py-2 rounded-xl"
+          >
+            حفظ
+          </button>
+
+        </div>
+
+        <div className="bg-white p-6 rounded-2xl shadow">
+
+          <h2 className="font-bold text-2xl mb-4">
+            الأنشطة
+          </h2>
+
+          {
+            userData.activities?.length > 0 ?
+
+            userData.activities.map((activity, index) => (
+
+              <div
+                key={index}
+                className="bg-gray-100 p-3 rounded-xl mb-2"
+              >
+                {activity}
+              </div>
+
+            ))
+
+            :
+
+            <p>لا توجد أنشطة</p>
+          }
+
+          <select className="w-full p-3 border rounded-xl mt-4">
+
+            <option>اختر نشاط</option>
+
+            {
+              activitiesList.map((activity, index) => (
+
+                <option key={index}>
+                  {activity}
+                </option>
+
+              ))
+            }
+
+          </select>
+
+        </div>
+
+        <div className="bg-white p-6 rounded-2xl shadow">
+
+          <h2 className="font-bold text-2xl mb-4">
+            الشهادات
+          </h2>
+
+          {
+            userData.certificates?.length > 0 ?
+
+            userData.certificates.map((certificate, index) => (
+
+              <div
+                key={index}
+                className="bg-gray-100 p-3 rounded-xl mb-2"
+              >
+                {certificate}
+              </div>
+
+            ))
+
+            :
+
+            <p>لا توجد شهادات</p>
+          }
+
+          <button
+            onClick={requestCertificate}
+            className="bg-green-600 text-white w-full p-3 rounded-xl mt-4"
+          >
+            طلب شهادة
+          </button>
+
+        </div>
 
       </div>
 
