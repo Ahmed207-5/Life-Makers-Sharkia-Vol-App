@@ -2,7 +2,9 @@ import { useEffect, useState } from 'react'
 
 import {
   collection,
-  getDocs
+  getDocs,
+  doc,
+  updateDoc
 } from 'firebase/firestore'
 
 import { db } from '../firebase/config'
@@ -11,85 +13,185 @@ export default function AdminDashboard() {
 
   const [users, setUsers] = useState([])
 
+  const [loading, setLoading] = useState(true)
+
   useEffect(() => {
-
-    const fetchUsers = async () => {
-
-      const querySnapshot =
-        await getDocs(collection(db, 'users'))
-
-      const usersData = []
-
-      querySnapshot.forEach((doc) => {
-
-        usersData.push({
-          id: doc.id,
-          ...doc.data()
-        })
-
-      })
-
-      setUsers(usersData)
-
-    }
 
     fetchUsers()
 
   }, [])
 
+  const fetchUsers = async () => {
+
+    const querySnapshot =
+      await getDocs(collection(db, 'users'))
+
+    const usersData = []
+
+    querySnapshot.forEach((docItem) => {
+
+      usersData.push({
+        id: docItem.id,
+        ...docItem.data()
+      })
+
+    })
+
+    setUsers(usersData)
+
+    setLoading(false)
+
+  }
+
+  const updateUser = async (id, data) => {
+
+    const userRef = doc(db, 'users', id)
+
+    await updateDoc(userRef, data)
+
+    fetchUsers()
+
+  }
+
+  if (loading) {
+
+    return <div className='p-10'>Loading...</div>
+
+  }
+
   return (
 
-    <div className='p-6'>
+    <div className='p-6 bg-gray-100 min-h-screen'>
 
-      <h1 className='text-4xl font-bold text-primary mb-6'>
+      <h1 className='text-4xl font-bold text-primary mb-8'>
         لوحة الأدمن
       </h1>
 
-      <div className='bg-white rounded-2xl shadow p-6'>
+      <div className='grid gap-6'>
 
-        <h2 className='text-2xl font-bold mb-4'>
-          المتطوعين
-        </h2>
+        {users.map((user, index) => (
 
-        <div className='space-y-4'>
+          <div
+            key={index}
+            className='bg-white rounded-2xl shadow p-6'
+          >
 
-          {users.map((user, index) => (
+            <div className='mb-4'>
 
-            <div
-              key={index}
-              className='border p-4 rounded-xl'
-            >
-
-              <p>
-                <strong>الاسم:</strong>
+              <h2 className='text-2xl font-bold'>
                 {user.name}
-              </p>
+              </h2>
+
+              <p>{user.email}</p>
+
+            </div>
+
+            <div className='grid md:grid-cols-2 gap-4'>
+
+              <input
+                type='number'
+                placeholder='عدد الساعات'
+                defaultValue={user.hours}
+                className='border p-3 rounded-xl'
+                onChange={(e) =>
+                  user.hours = Number(e.target.value)
+                }
+              />
+
+              <input
+                type='number'
+                placeholder='النقاط'
+                defaultValue={user.points}
+                className='border p-3 rounded-xl'
+                onChange={(e) =>
+                  user.points = Number(e.target.value)
+                }
+              />
+
+              <input
+                type='text'
+                placeholder='الشهادات'
+                className='border p-3 rounded-xl'
+                onChange={(e) =>
+                  user.certificate = e.target.value
+                }
+              />
+
+              <input
+                type='text'
+                placeholder='ملاحظات'
+                className='border p-3 rounded-xl'
+                onChange={(e) =>
+                  user.notes = e.target.value
+                }
+              />
+
+            </div>
+
+            <div className='flex flex-wrap gap-3 mt-6'>
+
+              <button
+                className='bg-green-600 text-white px-4 py-2 rounded-xl'
+                onClick={() =>
+                  updateUser(user.id, {
+                    approved: true
+                  })
+                }
+              >
+                قبول
+              </button>
+
+              <button
+                className='bg-red-600 text-white px-4 py-2 rounded-xl'
+                onClick={() =>
+                  updateUser(user.id, {
+                    approved: false
+                  })
+                }
+              >
+                رفض
+              </button>
+
+              <button
+                className='bg-blue-600 text-white px-4 py-2 rounded-xl'
+                onClick={() =>
+                  updateUser(user.id, {
+                    hours: user.hours || 0,
+                    points: user.points || 0,
+                    notes: user.notes || '',
+                    certificates:
+                      user.certificate
+                        ? [user.certificate]
+                        : []
+                  })
+                }
+              >
+                حفظ البيانات
+              </button>
+
+            </div>
+
+            <div className='mt-4 text-sm'>
 
               <p>
-                <strong>الإيميل:</strong>
-                {user.email}
-              </p>
+                <strong>الحالة:</strong>
 
-              <p>
-                <strong>الساعات:</strong>
-                {user.hours}
-              </p>
-
-              <p>
-                <strong>النقاط:</strong>
-                {user.points}
+                {user.approved
+                  ? ' مقبول'
+                  : ' غير مقبول'}
               </p>
 
               <p>
                 <strong>الدور:</strong>
+
                 {user.role || 'volunteer'}
               </p>
 
             </div>
 
-          ))}
+          </div>
 
-        </div>
+        ))}
 
       </div>
 
