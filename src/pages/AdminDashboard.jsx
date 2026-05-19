@@ -1,31 +1,100 @@
+import { useEffect, useState } from 'react'
+
+import {
+  collection,
+  getDocs
+} from 'firebase/firestore'
+
+import { db } from '../firebase/config'
+
 export default function AdminDashboard() {
+
+  const [users, setUsers] = useState([])
+
+  useEffect(() => {
+
+    const fetchUsers = async () => {
+
+      const querySnapshot =
+        await getDocs(collection(db, 'users'))
+
+      const usersData = []
+
+      querySnapshot.forEach((doc) => {
+
+        usersData.push({
+          id: doc.id,
+          ...doc.data()
+        })
+
+      })
+
+      setUsers(usersData)
+
+    }
+
+    fetchUsers()
+
+  }, [])
+
   return (
+
     <div className='p-6'>
-      <h1 className='text-4xl font-bold text-primary mb-6'>لوحة الأدمن</h1>
 
-      <div className='grid md:grid-cols-2 lg:grid-cols-4 gap-6'>
-        <div className='bg-white p-6 rounded-2xl shadow'>
-          <h2 className='font-bold text-xl mb-2'>إضافة نشاط</h2>
-          <button className='bg-orange text-white px-4 py-2 rounded-xl'>
-            إضافة
-          </button>
+      <h1 className='text-4xl font-bold text-primary mb-6'>
+        لوحة الأدمن
+      </h1>
+
+      <div className='bg-white rounded-2xl shadow p-6'>
+
+        <h2 className='text-2xl font-bold mb-4'>
+          المتطوعين
+        </h2>
+
+        <div className='space-y-4'>
+
+          {users.map((user, index) => (
+
+            <div
+              key={index}
+              className='border p-4 rounded-xl'
+            >
+
+              <p>
+                <strong>الاسم:</strong>
+                {user.name}
+              </p>
+
+              <p>
+                <strong>الإيميل:</strong>
+                {user.email}
+              </p>
+
+              <p>
+                <strong>الساعات:</strong>
+                {user.hours}
+              </p>
+
+              <p>
+                <strong>النقاط:</strong>
+                {user.points}
+              </p>
+
+              <p>
+                <strong>الدور:</strong>
+                {user.role || 'volunteer'}
+              </p>
+
+            </div>
+
+          ))}
+
         </div>
 
-        <div className='bg-white p-6 rounded-2xl shadow'>
-          <h2 className='font-bold text-xl mb-2'>قبول المتطوعين</h2>
-          <p>متابعة طلبات التسجيل</p>
-        </div>
-
-        <div className='bg-white p-6 rounded-2xl shadow'>
-          <h2 className='font-bold text-xl mb-2'>الحضور</h2>
-          <p>متابعة الحضور والانصراف</p>
-        </div>
-
-        <div className='bg-white p-6 rounded-2xl shadow'>
-          <h2 className='font-bold text-xl mb-2'>التقارير</h2>
-          <p>استخراج تقارير المتطوعين</p>
-        </div>
       </div>
+
     </div>
+
   )
+
 }
