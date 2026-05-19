@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 
 import { auth, db } from '../firebase/config'
+import { signOut } from 'firebase/auth'
 
 import {
   doc,
@@ -15,6 +16,14 @@ export default function Dashboard() {
   const [userData, setUserData] = useState(null)
 
   const [editing, setEditing] = useState(false)
+
+const logout = async () => {
+
+  await signOut(auth)
+
+  window.location.href = '/login'
+
+}
 
   useEffect(() => {
 
@@ -141,14 +150,25 @@ export default function Dashboard() {
 
           </div>
 
-          <div className='bg-white p-3 rounded-2xl'>
+          <div className='flex flex-col items-center gap-3'>
 
-            <QRCodeCanvas
-              value='https://ee-eu.kobotoolbox.org/bjCdFEdc'
-              size={170}
-            />
+  <div className='bg-white p-3 rounded-2xl'>
 
-          </div>
+    <QRCodeCanvas
+      value='https://ee-eu.kobotoolbox.org/bjCdFEdc'
+      size={170}
+    />
+
+  </div>
+
+  <button
+    onClick={logout}
+    className='bg-red-600 text-white px-5 py-2 rounded-xl'
+  >
+    تسجيل الخروج
+  </button>
+
+</div>
 
         </div>
 
